@@ -1,0 +1,11 @@
+services:
+  web:
+    image: ${ACM_AGENT_IMAGE:?请设置 ACM_AGENT_IMAGE 为 GHCR 镜像地址}
+    ports:
+      - "${PORT:-3000}:3000"
+    restart: unless-stopped
+    init: true
+    environment:
+      NODE_ENV: production
+      HOSTNAME: 0.0.0.0
+      PORT: 3000

@@ -1,0 +1,13 @@
+services:
+  web:
+    build:
+      context: .
+    image: acm-training-agent:latest
+    ports:
+      - "${PORT:-3000}:3000"
+    restart: unless-stopped
+    init: true
+    environment:
+      NODE_ENV: production
+      HOSTNAME: 0.0.0.0
+      PORT: 3000
