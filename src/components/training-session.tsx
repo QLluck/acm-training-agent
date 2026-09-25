@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
   ArrowLeft,
+  Bookmark,
   ArrowRight,
   Check,
   CheckCheck,
@@ -22,36 +23,63 @@ import {
 } from "lucide-react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { DemoBadge } from "@/components/ui";
-import { students, skillShortLabels } from "@/data/students";
+import { defaultStudent, students, skillShortLabels } from "@/data/students";
 import { useDemo, demoActions } from "@/lib/demo-store";
 import {
-  evaluateTrainingSession,
-  formatDuration,
-  generateTrainingPlan,
-} from "@/lib/training";
+  accountActions,
+  useAccount,
+  personalStudentId,
+} from "@/lib/account-store";
+import { generateLearningPlan } from "@/lib/learning";
+import { evaluateTrainingSession, formatDuration } from "@/lib/training";
 import type { Problem, SessionDraft, SkillKey } from "@/types/training";
 
 const initialDraft: SessionDraft = {
+  language: "C++17",
   code: "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n\n    // 先写下你的状态定义或关键观察\n    \n    return 0;\n}\n",
   note: "",
   hintLevel: 0,
   seconds: 0,
 };
+const languageDrafts: Record<"C++17" | "Python 3" | "Java 17", SessionDraft> = {
+  "C++17": initialDraft,
+  "Python 3": {
+    ...initialDraft,
+    language: "Python 3",
+    code: "import sys\n\ndef solve():\n    # 先写下你的关键观察\n    pass\n\nif __name__ == '__main__':\n    solve()\n",
+  },
+  "Java 17": {
+    ...initialDraft,
+    language: "Java 17",
+    code: "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        // 先写下你的关键观察\n    }\n}\n",
+  },
+};
 const hintTitles = ["问题引导", "方向提示", "结构提示", "复盘解析"];
 
 export function TrainingSession({ problem }: { problem: Problem }) {
   const state = useDemo();
-  const student = students.find((s) => s.id === state.studentId)!;
+  const account = useAccount();
+  const baseStudent =
+    students.find((s) => s.id === state.studentId) ?? defaultStudent;
+  const student = {
+    ...baseStudent,
+    name:
+      baseStudent.id === personalStudentId
+        ? account.profile.nickname
+        : baseStudent.name,
+  };
+  const fallbackDraft = languageDrafts[account.profile.language];
   const key = `${student.id}:${problem.id}`;
-  const draft = state.drafts[key] ?? initialDraft;
+  const draft = state.drafts[key] ?? fallbackDraft;
   const result = state.results[key];
   const [paused, setPaused] = useState(false);
   const [confirmReview, setConfirmReview] = useState(false);
   const [notice, setNotice] = useState("");
-  const plan = generateTrainingPlan(
+  const plan = generateLearningPlan(
     student,
     Object.values(state.results),
     state.round,
+    account.profile.track,
   );
   const item = plan.find((p) => p.problem.id === problem.id);
   const nextItem = plan.find(
@@ -71,17 +99,18 @@ export function TrainingSession({ problem }: { problem: Problem }) {
       const elapsed = Math.floor((now - previous) / 1000);
       if (elapsed > 0) {
         previous += elapsed * 1000;
-        if (!document.hidden) demoActions.tickDraft(key, elapsed, initialDraft);
+        if (!document.hidden)
+          demoActions.tickDraft(key, elapsed, fallbackDraft);
       }
     }, 1000);
     return () => {
       clearInterval(interval);
       document.removeEventListener("visibilitychange", onVisibilityChange);
     };
-  }, [key, paused, finished]);
+  }, [key, paused, finished, fallbackDraft]);
 
   function patch(partial: Partial<SessionDraft>) {
-    demoActions.patchDraft(key, partial, initialDraft);
+    demoActions.patchDraft(key, partial, fallbackDraft);
   }
   function requestHint(level: number) {
     if (level > draft.hintLevel + 1 || level > 3 || finished) return;
@@ -123,22 +152,38 @@ export function TrainingSession({ problem }: { problem: Problem }) {
           </h1>
           <p>{problem.platform} · 原创简化题面 · 难度为模拟估计</p>
         </div>
-        <div className={`timer ${paused ? "paused" : ""}`}>
-          <Clock3 size={19} />
-          <strong aria-label="已训练时间">
-            {formatDuration(draft.seconds)}
-          </strong>
+        <div className="session-tools">
           <button
-            className="icon-button"
-            aria-label={paused ? "继续计时" : "暂停计时"}
-            onClick={() => setPaused(!paused)}
-            disabled={finished}
+            type="button"
+            className={`button secondary ${account.bookmarks.includes(problem.id) ? "bookmarked" : ""}`}
+            aria-pressed={account.bookmarks.includes(problem.id)}
+            onClick={() => accountActions.toggleBookmark(problem.id)}
           >
-            {paused ? <Play size={16} /> : <Pause size={16} />}
+            <Bookmark
+              size={16}
+              fill={
+                account.bookmarks.includes(problem.id) ? "currentColor" : "none"
+              }
+            />
+            {account.bookmarks.includes(problem.id) ? "已收藏" : "收藏题目"}
           </button>
-          <small>
-            {finished ? "训练已结束" : paused ? "已暂停" : "训练进行中"}
-          </small>
+          <div className={`timer ${paused ? "paused" : ""}`}>
+            <Clock3 size={19} />
+            <strong aria-label="已训练时间">
+              {formatDuration(draft.seconds)}
+            </strong>
+            <button
+              className="icon-button"
+              aria-label={paused ? "继续计时" : "暂停计时"}
+              onClick={() => setPaused(!paused)}
+              disabled={finished}
+            >
+              {paused ? <Play size={16} /> : <Pause size={16} />}
+            </button>
+            <small>
+              {finished ? "训练已结束" : paused ? "已暂停" : "训练进行中"}
+            </small>
+          </div>
         </div>
       </div>
       <div className="session-grid">
@@ -196,12 +241,16 @@ export function TrainingSession({ problem }: { problem: Problem }) {
           <div className="panel-header">
             <Code2 size={17} />
             <h2>独立思考与实现</h2>
-            <span>C++17</span>
+            <span>{draft.language ?? "C++17"}</span>
           </div>
           <div className="editor-filename">
             <span>
               <i className="dot violet" />
-              main.cpp
+              {draft.language === "Python 3"
+                ? "main.py"
+                : draft.language === "Java 17"
+                  ? "Main.java"
+                  : "main.cpp"}
             </span>
             <span>本地草稿</span>
           </div>
@@ -212,7 +261,7 @@ export function TrainingSession({ problem }: { problem: Problem }) {
               ))}
             </div>
             <label className="sr-only" htmlFor="code-editor">
-              C++ 代码草稿
+              代码草稿
             </label>
             <textarea
               id="code-editor"
@@ -233,7 +282,11 @@ export function TrainingSession({ problem }: { problem: Problem }) {
           <div className="notes-area">
             <label htmlFor="training-note">
               <SquarePen size={16} />
-              训练笔记<span>{draft.note.length}/2000</span>
+              训练笔记
+              <span>
+                <LockKeyhole size={12} />
+                仅自己可见 · {draft.note.length}/2000
+              </span>
             </label>
             <textarea
               id="training-note"
@@ -274,7 +327,7 @@ export function TrainingSession({ problem }: { problem: Problem }) {
               </p>
             </div>
             <p className="hint-principle">
-              AI 的目标是帮助队员学会思考，而不是帮助队员 AC 一道题。
+              用一点恰到好处的提示，帮助你自己找到下一步。
             </p>
             <button
               className="button primary full-width"
@@ -450,7 +503,7 @@ export function TrainingSession({ problem }: { problem: Problem }) {
               </Link>
             )}
             <Link href="/coach" className="text-link">
-              查看教练视角 <ArrowRight size={15} />
+              查看教学空间 <ArrowRight size={15} />
             </Link>
           </div>
         </section>

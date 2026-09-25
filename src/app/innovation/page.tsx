@@ -19,14 +19,14 @@ import {
 import { PolicyDemo } from "@/components/policy-demo";
 import { DemoBadge, PageHeading, SectionTitle } from "@/components/ui";
 
-export const metadata: Metadata = { title: "产品创新与未来路线" };
+export const metadata: Metadata = { title: "学习方法与产品路线" };
 const flywheel = [
-  "更多真实队员",
+  "更多学习场景",
   "更多训练轨迹",
   "更准确的能力判断",
   "更好的训练策略",
   "更好的训练效果",
-  "吸引更多队伍使用",
+  "持续验证学习方法",
 ];
 const setterSteps = [
   "人类提出题目创新点",
@@ -55,10 +55,10 @@ export default function InnovationPage() {
           <BrainCircuit size={36} />
         </span>
         <div>
-          <span className="eyebrow">THE CORE OF ACM TRAINING AGENT</span>
+          <span className="eyebrow">A PURPOSE BEHIND EVERY PROBLEM</span>
           <h2>真正的核心，是知道下一步怎么练。</h2>
           <p>
-            面向高校 ACM / 算法竞赛集训队的 AI 个性化训练与教练辅助系统。
+            面向个人学习、编程课堂、教育培训、求职面试、考研算法与竞赛训练。
             <br />
             不再盲目刷题，让每一道题都有训练目的。
           </p>
@@ -71,17 +71,17 @@ export default function InnovationPage() {
         {[
           {
             icon: Database,
-            title: "不是新的题库",
+            title: "每一题都有练习依据",
             text: "CF、牛客、洛谷、AtCoder 提供题目，我们利用训练记录决定今天该刷什么。",
           },
           {
             icon: Sparkles,
-            title: "不是 ChatGPT 套壳",
+            title: "让提示跟上思考的节奏",
             text: "推荐受画像和教练策略约束；大模型是可替换的能力组件，不是核心资产。",
           },
           {
             icon: Fingerprint,
-            title: "不是普通刷题统计",
+            title: "把练习记录连成成长轨迹",
             text: "从做了多少题，进一步判断为什么卡题、能力如何变化、下一步如何验证。",
           },
         ].map(({ icon: Icon, title, text }) => (
@@ -95,7 +95,7 @@ export default function InnovationPage() {
       <section className="card innovation-section">
         <SectionTitle
           title="把教练经验，变成可执行的 Training Policy"
-          subtitle="可解释、可调整、可验证 · AI 在教练策略约束下做个性化决策"
+          subtitle="可解释、可调整、可验证 · 下面以算法竞赛的 DP 补强策略为例"
           aside={
             <span className="tag purple-tag">
               <GitBranch size={14} />
@@ -109,10 +109,10 @@ export default function InnovationPage() {
           {[
             "训练规则",
             "难度调整",
-            "新人培养路线",
-            "区域赛训练路线",
+            "编程入门路线",
+            "面试与考试路线",
             "专题训练策略",
-            "比赛复盘策略",
+            "课堂复盘策略",
           ].map((v) => (
             <span className="tag" key={v}>
               {v}
@@ -162,7 +162,7 @@ export default function InnovationPage() {
       </section>
       <section className="card innovation-section roadmap-section">
         <SectionTitle
-          title="从可交互原型，走向真实集训平台"
+          title="从一次练习，走向长期学习空间"
           subtitle="先验证训练逻辑，再逐步接入真实数据与能力"
           aside={<span className="tag">PRODUCT ROADMAP</span>}
         />
@@ -182,7 +182,7 @@ export default function InnovationPage() {
             <h3>真实数据与训练验证</h3>
             <p>
               优先接入 Codeforces
-              提交记录，建立账户与团队，加入教练策略配置及可控的 LLM Hint。
+              提交记录，建立真实账户与班级，加入教练策略配置及可控的 LLM Hint。
             </p>
             <span className="tag">规划中</span>
           </article>
@@ -203,7 +203,7 @@ export default function InnovationPage() {
             <div>
               <h3>未来探索：AI 辅助原创出题</h3>
               <p>
-                ACM 队员 / 教练提出创新想法，AI
+                学习者与老师提出创新想法，AI
                 辅助完成工程化出题流程。当前仅概念展示。
               </p>
             </div>
@@ -228,11 +228,11 @@ export default function InnovationPage() {
       <section className="innovation-cta">
         <Users size={30} />
         <div>
-          <h2>让教练的经验，陪伴每一名队员。</h2>
-          <p>从今天的训练，到下一场比赛，把每一步进步连接起来。</p>
+          <h2>让老师的经验，陪伴每一位学习者。</h2>
+          <p>从入门、考试到面试与比赛，把每一步进步连接起来。</p>
         </div>
         <Link className="button primary" href="/coach">
-          体验教练工作台 <ArrowUpRight size={17} />
+          体验教学工作台 <ArrowUpRight size={17} />
         </Link>
         <Link className="text-link" href="/student">
           <Route size={16} />

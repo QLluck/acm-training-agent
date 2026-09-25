@@ -20,6 +20,11 @@ test("所有页面可访问，无外部资源依赖，无浏览器错误，健�
     "/student/session/1",
     "/coach",
     "/innovation",
+    "/account",
+    "/account?tab=preferences",
+    "/account?tab=profile",
+    "/account?tab=library",
+    "/account?tab=data",
   ]) {
     const response = await page.goto(route);
     expect(response?.status()).toBe(200);
@@ -49,12 +54,12 @@ test("提示必须按级解锁，复盘需要确认，训练结果持久化并�
   ).toBeVisible();
   await page.getByRole("button", { name: /Hint 2/ }).click();
   await page.getByRole("button", { name: /Hint 3/ }).click();
-  await page.getByLabel("C++ 代码草稿").fill("// 独立思考草稿");
+  await page.getByLabel("代码草稿").fill("// 独立思考草稿");
   await page
     .getByLabel("训练笔记")
     .fill("状态表示恰好到达第 i 级的方案数，检查 f[0]。");
   await page.reload();
-  await expect(page.getByLabel("C++ 代码草稿")).toHaveValue("// 独立思考草稿");
+  await expect(page.getByLabel("代码草稿")).toHaveValue("// 独立思考草稿");
   await expect(page.getByLabel("训练笔记")).toHaveValue(/检查 f\[0\]/);
   await page.getByRole("button", { name: "结束独立思考并复盘" }).click();
   await expect(page.getByRole("dialog")).toBeVisible();
@@ -77,7 +82,27 @@ test("提示必须按级解锁，复盘需要确认，训练结果持久化并�
   await expect(page.getByRole("heading", { name: /第 2 轮/ })).toBeVisible();
   await expect(page.locator(".skill-summary")).toContainText("53");
   await page.goto("/coach");
+  await expect(page.locator(".heatmap tbody tr").first()).toContainText(
+    "尚未分享进度",
+  );
+  await expect(
+    page.locator(".heatmap tbody tr").first().getByLabel("未共享"),
+  ).toHaveCount(6);
+  await page.goto("/account?tab=data");
+  await page.getByLabel("向教学空间分享学习进度").check();
+  await page.goto("/coach");
   await expect(page.locator(".heatmap tbody tr").first()).toContainText("53");
+  await expect(
+    page.getByText("状态表示恰好到达第 i 级的方案数，检查 f[0]。", {
+      exact: true,
+    }),
+  ).not.toBeVisible();
+  await page.goto("/account?tab=data");
+  await page.getByLabel("向教学空间分享学习进度").uncheck();
+  await page.goto("/coach");
+  await expect(page.locator(".heatmap tbody tr").first()).toContainText(
+    "尚未分享进度",
+  );
 });
 
 test("未完成保留补题状态；切换队员隔离数据", async ({ page }) => {
@@ -90,7 +115,7 @@ test("未完成保留补题状态；切换队员隔离数据", async ({ page }) 
   await expect(
     page.locator(".problem-row").filter({ hasText: "恰好到达的路径" }),
   ).toContainText("待补题");
-  await page.getByLabel("切换模拟队员").selectOption("lin");
+  await page.getByLabel("切换模拟学员").selectOption("lin");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("林沐");
   await page.goto("/student/session/1");
   await expect(
@@ -101,27 +126,28 @@ test("未完成保留补题状态；切换队员隔离数据", async ({ page }) 
 test("教练筛选、决策、个人加练和导出都有可见结果", async ({ page }) => {
   await page.goto("/coach");
   await expect(page.locator(".heatmap tbody tr")).toHaveCount(12);
-  await page.getByLabel("筛选队员层级").selectOption("新人组");
+  await page.getByLabel("筛选学员层级").selectOption("新人组");
   await expect(page.locator(".heatmap tbody tr")).toHaveCount(3);
   await page.getByRole("button", { name: "接受建议", exact: true }).click();
-  await expect(page.getByText("教练已接受", { exact: true })).toBeVisible();
+  await expect(page.getByText("老师已接受", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "调整难度", exact: true }).click();
   await expect(page.locator(".plan-adjustments")).toContainText("-100");
   await page
-    .getByRole("button", { name: "给全队增加专题", exact: true })
+    .getByRole("button", { name: "给全班增加专题", exact: true })
     .click();
   await expect(page.locator(".plan-adjustments")).toContainText("图上状态设计");
-  await page.getByLabel("单独加练队员").selectOption("yuan");
-  await page.getByRole("button", { name: "为某队员单独加练" }).click();
+  await page.getByLabel("单独加练学员").selectOption("lin");
+  await page.getByRole("button", { name: "为某学员单独加练" }).click();
   const downloadPromise = page.waitForEvent("download");
   await page.getByRole("button", { name: "导出周计划" }).click();
   expect((await downloadPromise).suggestedFilename()).toBe(
     "acm-weekly-plan-demo.txt",
   );
   await page.goto("/student");
-  await expect(page.getByText("教练为你安排了单独加练")).toBeVisible();
+  await page.getByLabel("切换模拟学员").selectOption("lin");
+  await expect(page.getByText("老师为你安排了单独加练")).toBeVisible();
   await page.goto("/coach");
-  await expect(page.getByText("教练已接受", { exact: true })).toBeVisible();
+  await expect(page.getByText("老师已接受", { exact: true })).toBeVisible();
 });
 
 test("Training Policy 能响应阈值变化", async ({ page }) => {
@@ -146,6 +172,11 @@ for (const viewport of [
       "/student/session/1",
       "/coach",
       "/innovation",
+      "/account",
+      "/account?tab=preferences",
+      "/account?tab=profile",
+      "/account?tab=library",
+      "/account?tab=data",
     ]) {
       await page.goto(route);
       expect(
@@ -157,9 +188,7 @@ for (const viewport of [
     }
     if (viewport.width < 760) {
       await page.getByRole("button", { name: "打开导航菜单" }).click();
-      await page
-        .getByRole("link", { name: "我的训练 Training", exact: true })
-        .click();
+      await page.getByRole("link", { name: "开始练习", exact: true }).click();
       await expect(page).toHaveURL(/\/student$/);
     }
   });

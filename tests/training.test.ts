@@ -14,6 +14,11 @@ import {
 
 test("12 名队员的计划无重复、数据有效，诊断和演示题都完整", () => {
   assert.equal(students.length, 12);
+  assert.equal(
+    new Set(students.map((s) => s.id)).size,
+    students.length,
+    "学员 ID 必须唯一，避免账户记录串用",
+  );
   for (const student of students) {
     const plan = generateTrainingPlan(student);
     assert.equal(plan.length, 5);
@@ -54,7 +59,7 @@ test("策略边界严格区分掌握度、Rating 和独立完成率", () => {
 
 test("独立完成增量高于看解析后的完成；未完成不扣分、不误判掌握", () => {
   const input = {
-    studentId: "yuan",
+    studentId: students[0].id,
     problem: problems[0],
     outcome: "ac" as const,
     seconds: 1200,
@@ -75,7 +80,7 @@ test("独立完成增量高于看解析后的完成；未完成不扣分、不�
 
 test("结果只更新所属队员，画像不超过 100，状态回流到计划和团队", () => {
   const result = evaluateTrainingSession({
-    studentId: "yuan",
+    studentId: students[0].id,
     problem: problems[0],
     outcome: "ac",
     seconds: 900,

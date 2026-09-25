@@ -58,7 +58,7 @@ function member(
 }
 
 export const students: Student[] = [
-  member("yuan", "袁某", 1548, "进阶组", [52, 74, 58, 76, 69, 88]),
+  member("chen-xin", "陈欣", 1548, "进阶组", [52, 74, 58, 76, 69, 88]),
   member("lin", "林沐", 2184, "主力组", [90, 88, 85, 91, 86, 92], {
     weeklyHours: 14.5,
     completionRate: 96,
@@ -155,3 +155,6 @@ export const students: Student[] = [
     submissions: 33,
   }),
 ];
+
+// 首位学员作为本地体验账户；修改展示姓名或 ID 只需改动上方数据。
+export const defaultStudent = students[0];

@@ -1,5 +1,5 @@
 import { problems } from "@/data/problems";
-import { skillShortLabels } from "@/data/students";
+import { defaultStudent, skillShortLabels } from "@/data/students";
 import {
   skillKeys,
   type PlanItem,
@@ -62,7 +62,7 @@ export function generateTrainingPlan(
   );
   let ids = [2, 1, 3, 8, 5];
   if (round > 0 && matchesDpPolicy(student, profile)) ids = [6, 7, 1, 11, 12];
-  else if (student.id !== "yuan" || round > 0) {
+  else if (student.id !== defaultStudent.id || round > 0) {
     const pool = [...problems].sort((a, b) => {
       const score = (p: Problem) =>
         (p.skills.includes(weakest) ? -500 : 0) +

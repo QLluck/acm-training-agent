@@ -22,6 +22,10 @@ try {
     ["session", "/student/session/1"],
     ["coach", "/coach"],
     ["innovation", "/innovation"],
+    ["account", "/account"],
+    ["profile", "/account?tab=profile"],
+    ["preferences", "/account?tab=preferences"],
+    ["data", "/account?tab=data"],
   ]) {
     const response = await page.goto(`${baseURL}${route}`, {
       waitUntil: "networkidle",
@@ -38,6 +42,7 @@ try {
   for (const [name, route] of [
     ["home", "/"],
     ["coach", "/coach"],
+    ["account", "/account"],
   ]) {
     await page.goto(`${baseURL}${route}`, { waitUntil: "networkidle" });
     await page.screenshot({

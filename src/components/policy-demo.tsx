@@ -54,7 +54,7 @@ export function PolicyDemo() {
           value={success}
           onChange={(e) => setSuccess(Number(e.target.value))}
         />
-        <p>预设规则示例；真实阈值需结合队内试点校准。</p>
+        <p>预设规则示例；竞赛示例，真实阈值需经试点校准。</p>
       </div>
       <div className="policy-code">
         <span className="code-caption">

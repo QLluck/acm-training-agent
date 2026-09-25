@@ -69,6 +69,7 @@ export interface SessionResult {
 }
 
 export interface SessionDraft {
+  language?: "C++17" | "Python 3" | "Java 17";
   code: string;
   note: string;
   hintLevel: number;
